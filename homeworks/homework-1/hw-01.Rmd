@@ -110,6 +110,7 @@ k. Create a corrected histogram and again include it as part of your submitted r
 more reasonable than the previous histogram.
 
 ```{r}
+library(ggplot2)
 ggplot(rain.df, aes(x = daily)) +
   geom_histogram() +
   labs(title = "Histogram of Daily Rainfall")
