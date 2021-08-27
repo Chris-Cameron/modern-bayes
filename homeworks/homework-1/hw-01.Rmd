@@ -50,10 +50,10 @@ colnames(rain.df) #Get column names of dataframe
 
 d. What command would you use to get the value at row 2, column 4? What is the value?
 
-I would use the rain.df[4,2] command to get the value, which is 4
+I would use the rain.df[2,4] command to get the value, which is 0
 
 ```{r}
-rain.df[4,2]
+rain.df[2,4]
 ```
 
 
