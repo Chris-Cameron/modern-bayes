@@ -31,7 +31,7 @@ a. Load the data set into R and make it a data frame called \texttt{rain.df}.  W
 ```{r load-data}
 rain.df <- read.table("data/rnf6080.dat") #Convert .dat to dataframe
 ```
-I used the \texttt{read.table} command to convert the dataset into a data frame.
+I used the read.table command to convert the dataset into a data frame.
 
 b. How many rows and columns does \texttt{rain.df} have?  How do you know?  (If there are not 5070 rows and 27 columns, you did something wrong in the first part of the problem.)
 
@@ -41,16 +41,16 @@ is indicated by the number of variables.
 
 c. What command would you use to get the names of the columns of \texttt{rain.df}? What are those names?
 
-I would use the \texttt{colnames} command to get the column names in rain.df
+I would use the colnames command to get the column names in rain.df
 
 ```{r}
-colnames(rain.df)
+colnames(rain.df) #Get column names of dataframe
 ```
 
 
 d. What command would you use to get the value at row 2, column 4? What is the value?
 
-I would use the \texttt{rain.df[4,2]} command to get the value, which is \texttt{4}
+I would use the rain.df[4,2] command to get the value, which is 4
 
 ```{r}
 rain.df[4,2]
@@ -59,16 +59,16 @@ rain.df[4,2]
 
 e. What command would you use to display the whole second row?  What is the content of that row?
 
-I would use the \texttt{rain.df[2,]} command to get the value, the content is below:
+I would use the rain.df[2,] command to get the value, the content is below:
 
 ```{r}
-rain.df[2,]
+rain.df[2,] #Get row 2 of dataframe
 ```
 
 
 f.  What does the following command do?
 ```{r}
-names(rain.df) <- c("year","month","day",seq(0,23))
+names(rain.df) <- c("year","month","day",seq(0,23)) #Rename columns
 ```
 
 The above command renames the first three columns to "year", "month", and "day",
@@ -78,18 +78,19 @@ g.  Create a new column called \texttt{daily}, which is the sum of the 24 hourly
 
 ```{r}
 library(dplyr)
-rain.df <- mutate(rain.df, daily = rowSums(rain.df[4:27]))
+rain.df <- mutate(rain.df, daily = rowSums(rain.df[4:27])) #Add daily rainfall totals
 ```
 
 h. Give the command you would use to create a histogram of the daily rainfall amounts.  Please make sure to attach your figures in your .pdf report. 
 
-I would use the \texttt{ggplot(rain.df, aes(x = daily)) + geom_histogram()}
+I would use the ggplot(rain.df, aes(x = daily)) + geom_histogram()
 command to create a histogram of the daily rainfall amounts.
 
 ```{r}
+library(ggplot2)
 ggplot(rain.df, aes(x = daily)) +
   geom_histogram() +
-  labs(title = "Histogram of Daily Rainfall")
+  labs(title = "Histogram of Daily Rainfall") #Dislays distirubtion of daily rainfall totals
 ```
 
 i. Explain why that histogram above cannot possibly be right.
@@ -99,10 +100,10 @@ negative amount of rainfall in a day.
 
 j. Give the command you would use to fix the data frame.
 
-I would use the \texttt{rain.df[rain.df < 0] <- NA} command to fix the data
+I would use the rain.df[rain.df < 0] <- NA command to fix the data
 frame, because the negative values likely reflect recording errors.
 ```{r}
-rain.df[rain.df < 0] <- NA
+rain.df[rain.df < 0] <- NA #Remove error values
 ```
 
 
@@ -110,10 +111,9 @@ k. Create a corrected histogram and again include it as part of your submitted r
 more reasonable than the previous histogram.
 
 ```{r}
-library(ggplot2)
 ggplot(rain.df, aes(x = daily)) +
   geom_histogram() +
-  labs(title = "Histogram of Daily Rainfall")
+  labs(title = "Histogram of Daily Rainfall") #Display corrected distribution
 ```
 The above histogram is more reasonable than the previous one becuase it only contains
 positive values for rainfall.
@@ -124,7 +124,7 @@ positive values for rainfall.
 a. For each of the following commands, either explain why they should be errors, or explain the non-erroneous result.
 
 ```{r}
-x <- c("5","12","7")
+x <- c("5","12","7") 
 ```
 Sets x to a character vector containing the strings "5",
 "12", and "7" 
@@ -184,17 +184,17 @@ value at the first row and third column. This gives 19 (7+12)
 
 a.) What is the point of reproducible code? 
 
-The purpose of reproducible code is for others to be able to readily use it
-when collaborating.
+The purpose of reproducible code is for those using the code to be able to get
+consistent results.
 
 b.) Given an example of why making your code reproducible is important for you to know in this class and moving forward. 
 
-If code is not reproducible, it is much more difficult to analyze how someone got a result
-or help someone resolve an issue they are having.
+If code is not reproducible, it may need to be reworked whenever there
+are changes to any datasets used.
 
 c.) On a scale of 1 (easy) -- 10 (hard), how hard was this assignment. If this assignment was hard ($>5$), please state in one sentence what you struggled with. 
 
-\texttt{4}
+4
 
 
 
