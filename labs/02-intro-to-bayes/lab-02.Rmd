@@ -58,11 +58,20 @@ You have a rough sketch of what you should do for this part of the assignment. T
 # Input: obs.data, theta
 # Output: bernoulli likelihood
 
-
+bernoulliLH <- function(obs.data, theta){
+  N <- length(obs.data)
+  x <- sum (obs.data)
+  LH <- (theta^x)*((1-theta)^{N-x})
+  return(LH)
+}
 ### Plot LH for a grid of theta values ###
 # Create the grid #
+theta.sim <- seq(from = 0, to = 1, length.out = 1000)
 # Store the LH values
+sim.LH <- bernoulliLH(obs.data, theta = theta.sim)
 # Create the Plot
+plot(theta.sim, sim.LH, type = "l", main = "Likelihood Profile", 
+     xlab = "Simulated Support", ylab = "Likelihood")
 ```
 
 
@@ -71,8 +80,47 @@ You have a rough sketch of what you should do for this part of the assignment. T
 
 Write a function that takes as its inputs  prior parameters \textsf{a} and \textsf{b} for the Beta-Bernoulli model and the observed data, and produces the posterior parameters you need for the model. \textbf{Generate and print} the posterior parameters for a non-informative prior i.e. \textsf{(a,b) = (1,1)} and for an informative case \textsf{(a,b) = (3,1)}}.
 
+```{r}
+betberPos <- function(a, b, obs.data){
+  n <- length(obs.data)
+  x <- sum (obs.data)
+  
+  prior <- c((x+a), (n-x+b))
+  return( prior)
+}
+
+print(betberPos(1,1,obs.data))
+print(betberPos(3,1,obs.data))
+```
 
 
 # Task 5 (To be completed for homework)
 
 Create two plots, one for the informative and one for the non-informative case to show the posterior distribution and superimpose the prior distributions on each along with the likelihood. What do you see? Remember to turn the y-axis ticks off since superimposing may make the scale non-sense.
+```{r}
+distPlot <- function(p1,p2){
+  n <- length(obs.data)
+  x <- sum (obs.data)
+  params <- betberPos (p1,p2,obs.data)
+  a <- params[1]
+  b <- params[2]
+
+  
+  like = dbeta(theta.sim, x+1, n-x+1)
+  prior = dbeta(theta.sim, a, b)
+  post = dbeta(theta.sim, x+a, n-x+b)
+
+  
+  plot(theta.sim,post,type="l",ylab="Density", yaxt = 'n',lty=2,lwd=3,
+  xlab = expression(theta))
+  lines(theta.sim,like,lty=1,lwd=3)
+  lines(theta.sim,prior,lty=3,lwd=3)
+  legend(0.7,4,c("Prior","Likelihood","Posterior"),
+  lty=c(3,1,2),lwd=c(3,3,3))
+} # yaxt from: https://stackoverflow.com/questions/10393076/suppress-ticks-in-plot-in-r 
+
+distPlot(1,1)
+distPlot(3,1)
+
+```
+
