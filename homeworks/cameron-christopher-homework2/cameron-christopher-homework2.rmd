@@ -57,6 +57,7 @@ plot(theta.sim, sim.LH, type = "l", main = "Likelihood Profile",
 Write a function that takes as its inputs  prior parameters \textsf{a} and \textsf{b} for the Beta-Bernoulli model and the observed data, and produces the posterior parameters you need for the model. \textbf{Generate and print} the posterior parameters for a non-informative prior i.e. \textsf{(a,b) = (1,1)} and for an informative case \textsf{(a,b) = (3,1)}}.
 
 ```{r}
+#Function to return parameters for beta-bernoulli posterior parameters
 betberPos <- function(a, b, obs.data){
   n <- length(obs.data)
   x <- sum (obs.data)
@@ -65,7 +66,10 @@ betberPos <- function(a, b, obs.data){
   return( prior)
 }
 
-print(betberPos(1,1,obs.data))
+#Print results for each case
+print("Non-Informative:")
+print(betberPos(1,1,obs.data)) 
+print("Informative:")
 print(betberPos(3,1,obs.data))
 ```
 
@@ -74,6 +78,8 @@ print(betberPos(3,1,obs.data))
 
 Create two plots, one for the informative and one for the non-informative case to show the posterior distribution and superimpose the prior distributions on each along with the likelihood. What do you see? Remember to turn the y-axis ticks off since superimposing may make the scale non-sense.
 ```{r}
+#Function to create plot of beta distribution
+#p1 p2 - parameters
 distPlot <- function(p1,p2){
   n <- length(obs.data)
   x <- sum (obs.data)
@@ -81,12 +87,12 @@ distPlot <- function(p1,p2){
   a <- params[1]
   b <- params[2]
 
-  
+  #Define Lines 
   like = dbeta(theta.sim, x+1, n-x+1)
   prior = dbeta(theta.sim, a, b)
   post = dbeta(theta.sim, x+a, n-x+b)
 
-  
+  #Plot Lines
   plot(theta.sim,post,type="l",ylab="Density", yaxt = 'n',lty=2,lwd=3,
   xlab = expression(theta))
   lines(theta.sim,like,lty=1,lwd=3)
@@ -133,18 +139,20 @@ $$(x_1,\dotsc,x_8) = (20.9, 69.7, 3.6, 21.8, 21.4, 0.4, 6.7, 10.0).$$
 Plot the prior and posterior p.d.f.s. (Be sure to make your plots on a scale that allows you to clearly see the important features.)
 
 ```{r}
-  obs.data <- c(20.9, 69.7, 3.6, 21.8, 21.4, 0.4, 6.7, 10.0)
+  obs.data <- c(20.9, 69.7, 3.6, 21.8, 21.4, 0.4, 6.7, 10.0) #Define data
 
+  #Define params
   x <- sum (obs.data)
   n <- length (obs.data)
 
   a <- 0.1
   b <- 1.0
   
+  #Define Lines
   prior = dgamma(theta.sim, a, b)
   post = dgamma(theta.sim, a+n, x+b)
 
-  
+  #Plot Lines
   plot(theta.sim,post,type="l",ylab="Density",lty=2,lwd=3,
   xlab = expression(theta))
   lines(theta.sim,prior,lty=1,lwd=3)
@@ -180,15 +188,20 @@ a. Identify a class of conjugate prior densities for $\theta$. \textcolor{red}{A
  distribution as well).
  
 ```{r}
+#Redefine theta to cover the range of my sample Galenshore functions
 theta.sim <- seq(from = 0, to = 4, length.out = 1000)
+
+#Function that gets y-values for galenshore
 galenshore <- function(th,c,d){
   y <- (2/gamma(c))*((d^(2*c))*(th^((2*c)-1))*exp((-(d^2))*(th^2)))
   return(y)
 }
 
+#Define Lines
 example = galenshore(theta.sim, 1, 1)
 example2 = galenshore(theta.sim, 1, 0.5)
 
+#Plot Lines
   plot(theta.sim,example,type="l",ylab="Density",lty=2,lwd=3,
   xlab = expression(theta))
   lines(theta.sim,example2,lty=1,lwd=3)
