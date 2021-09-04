@@ -1,7 +1,7 @@
 ---
 title: "Homework 02"
 author: "Christopher Cameron"
-date: "Due 9/3/2021"
+date: "Due 9/4/2021"
 header-includes:
    - \usepackage{hyperref, color}
    - \input{custom2}
@@ -153,14 +153,26 @@ Plot the prior and posterior p.d.f.s. (Be sure to make your plots on a scale tha
 
 
 ```
+d. Give a specific example of an application where an Exponential model would be reasonable. Give an example where an Exponential model would NOT be appropriate, and explain why.
+
+An Exponential distribution would be reasonable to model the time between
+car accidents on a stretch of road, as a recent car accident would not
+change the likelihood of car accidents after it (assuming pile-ups are counted
+as one accident).
+
+It would not be reasonable to model the longevity of an automobile, because its
+parts would wear down over
+time and increase the likelihood of failure as time goes on.
+
 # 3. {\em Priors, Posteriors, Predictive Distributions (Hoff, 3.9)}
 
 An unknown quantity $$Y \mid \theta $$ has a Galenshore($a, \theta$) distribution if its density is given by 
 
 $$p(y \mid \theta) = \frac{2}{\Gamma(a)} \; \theta^{2a} y^{2a - 1} e^{-\theta^2 y^2}$$
-for $y>0, \theta >0, a>0.$ Assume for now that $a$ is known and $\theta$ is unknown and a random variable. For this density, 
-$$E[Y] = \frac{\Gamma(a +1/2)}{\theta \Gamma(a)}$$ and 
-$$E[Y^2] = \frac{a}{\theta^2}.$$
+for $y>0, \theta >0, a>0.$ Assume for now that $a$ is known and $\theta$ is unknown and a random variable. For this density 
+$E[Y] = \frac{\Gamma(a +1/2)}{\theta \Gamma(a)}$ and 
+$E[Y^2] = \frac{a}{\theta^2}.$
+
 a. Identify a class of conjugate prior densities for $\theta$. \textcolor{red}{Assume the prior parameters are $c$ and $d.$} That is, state the distribution that $\theta$ should have with parameters $c,d$ such that the resulting posterior is conjugate. Plot a few members of this class of densities.
 
  If the prior is a \emph{Galenshore} distribution, then the posterior distribution should also
@@ -168,9 +180,9 @@ a. Identify a class of conjugate prior densities for $\theta$. \textcolor{red}{A
  distribution as well).
  
 ```{r}
+theta.sim <- seq(from = 0, to = 4, length.out = 1000)
 galenshore <- function(th,c,d){
-  e <- exp(1)
-  y <- (2*((d^(2*c))*(th^(2*c-1))*e^((-d^2)*(th^2))))/gamma(c)
+  y <- (2/gamma(c))*((d^(2*c))*(th^((2*c)-1))*exp((-(d^2))*(th^2)))
   return(y)
 }
 
@@ -193,7 +205,7 @@ $$ p(\theta\mid y_{1:n}) \propto p(y_{1:n}\mid\theta)p(\theta)$$
   $$p(\theta\mid y_{1:n}) = \theta^{2(an+c)-1}e^{-\theta(d^2 +\sum_{i = 1}^{n} y_i^2)}$$
   
   c. Show that $$\frac{p(\theta_a \mid y_{1:n})}{p(\theta_b \mid y_{1:n})} = \bigg( \frac{\theta_a}{\theta_b} \bigg)^{2(an + c) - 1}
-e^{(\theta_b^2 - \theta_a^2)(d^2 + \sum y_i^2)},$$ where $$\theta_a, \theta_b \sim \text{Galenshore}(c,d).$$ Identify a sufficient statistic.
+e^{(\theta_b^2 - \theta_a^2)(d^2 + \sum y_i^2)},$$ where $\theta_a, \theta_b \sim \text{Galenshore}(c,d).$ Identify a sufficient statistic.
 
 $$\frac{p(\theta_a \mid y_{1:n})}{p(\theta_b \mid y_{1:n})} = \frac{\theta_a^{2(an+c)-1}e^{-\theta_a(d^2 +\sum_{i = 1}^{n} y_i^2)}}{\theta_b^{2(an+c)-1}e^{-\theta_b(d^2 +\sum_{i = 1}^{n} y_i^2)}}$$
 $$\frac{p(\theta_a \mid y_{1:n})}{p(\theta_b \mid y_{1:n})} = \bigg(\frac{\theta_a}{\theta_b}\bigg)^{2(an+c-1)}e^{(\theta_b^2 - \theta_a^2)(d^2 + \sum_{i = 1}^{n} y_i^2)}$$
@@ -202,17 +214,24 @@ $$\frac{p(\theta_a \mid y_{1:n})}{p(\theta_b \mid y_{1:n})} = \bigg(\frac{\theta
 it is the only information from the sample that is necessary to calculate the 
 answer.
 
-d. Determine $$E[\theta \mid y_{1:n}]$$.
+d. Determine $E[\theta \mid y_{1:n}]$.
 
-$$ E[\theta \mid y_{1:n}] = \int\theta*\theta^{2(an+c)-1}e^{-\theta(d^2 +\sum_{i = 1}^{n} y_i^2)} d\theta$$
+$$p(\theta\mid y_{1:n}) = \theta^{2(an+c)-1}e^{-\theta(d^2 +\sum_{i = 1}^{n} y_i^2)}$$
+This can be interpreted as $\Ga(an+c-\frac{1}{2}, d+\sum y_i)$
 
-$$ E[\theta \mid y_{1:n}] = \int\theta^{2(an+c)}e^{-\theta(d^2 +\sum_{i = 1}^{n} y_i^2)} d\theta$$
+Therefore $E[\theta\mid y_{1:n}] = \frac{\Gamma(an+c)}{d+\sum y_i\Gamma(an+c-\frac{1}{2})}$
 
-e. Show that the form of the posterior predictive density $$p(y_{n+1} \mid y_{1:n}) =  \frac{2 y_{n+1}^{2a - 1} \Gamma(an + a + c)}{\Gamma(a)\Gamma(an + c)}
+e. Show that the form of the posterior predictive density: $$p(y_{n+1} \mid y_{1:n}) =  \frac{2 y_{n+1}^{2a - 1} \Gamma(an + a + c)}{\Gamma(a)\Gamma(an + c)}
 \frac{(d^2 + \sum y_i^2)^{an + c}}{(d^2 + \sum y_i^2 + y_{n+1}^2)^{(an + a + c)}}.$$
 
 $$p(y_{n+1} \mid y_{1:n}) =\int_\theta p(y_n+1\mid\theta,y_{1:n})p(\theta\mid y_{1:n})$$
 
 $$=\int_\theta p(y_{1:n}\mid\theta) p(\theta\mid y_{1:n}) d\theta$$
 
-$$=p(y \mid \theta) = \frac{2}{\Gamma(a)} \; \theta^{2a} y_{n+1}^{2a - 1} e^{-\theta^2 y_{n+1}^2} * $$
+$$p(y \mid \theta) = \int_\theta \frac{2}{\Gamma(a)} \; \theta^{2a} y_{n+1}^{2a - 1} e^{-\theta^2 y_{n+1}^2} * \frac{2}{\Gamma(an+c)}\bigg(\sqrt{d^2+\sum y_i^2}\bigg)^{2(an+c)}\theta^{2(an+c)-1}e^{-\bigg(\sqrt{d^2+\sum y_i^2}\bigg)^2 \theta^2}d\theta$$
+
+$$= \frac{2y_{n+1}^{2a-1}2\bigg(\sqrt{d^2+\sum y_i^2}\bigg)^{2(an+c)}}{\Gamma(a)\Gamma(an+c)} * \int_\theta \theta^{2(an+a+c)-1} e^{-\theta^2[y_{n+1}^2+d^2+\sum y_i^2]}d\theta * \frac{(d^2+\sum y_i^2+y_{n+1}^2)^{(an+a+c)}}{(d^2+\sum y_i^2+y_{n+1}^2)^{(an+a+c)}}\frac{2}{\Gamma(an+a+c)}\frac{\Gamma(-)}{2}$$
+$$ \frac{2y_{n+1}^{a-1}2(d^2+\sum y_i^2)^{(an+c)}}{\Gamma(a)\Gamma(an+c)}*\int\frac{2}{\Gamma(an+a+c)}(d^2+\sum y_i^2+y_{n+1}^2)^{(an+a+c)}d\theta*\bigg[\frac{\Gamma(an+a+c)}{2}*\frac{1}{d^2+\sum y_i^2+y_{n+1}^2}\bigg]$$
+
+$$= \frac{2y_{n+1}^{a-1}(d^2+\sum y_i^2)^{an+c}\Gamma(an+a+c)}{\Gamma(a)\Gamma(an+c)(d^2)+\sum y_i^2+y_{n+1}^2}$$
+
