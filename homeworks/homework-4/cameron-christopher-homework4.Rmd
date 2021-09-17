@@ -1,0 +1,64 @@
+---
+title: "cameron-christopher-homework4.Rmd"
+author: "Chris Cameron"
+date: "9/15/2021"
+header-includes:
+   - \usepackage{hyperref, color}
+   - \input{custom2}
+output: pdf_document
+indent: true
+documentclass: article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. (10 points, 5 points each) Hoff, 3.10 (Change of variables). 
+
+$$p_\psi (\psi) = p_\theta(h(\psi))\bigg|\frac{dh}{d\psi}\bigg| $$
+
+a) $\theta \sim  beta(a,b)$ & $\psi = log[\theta/(1-\theta)]$. Obtain the form
+of $p_\psi$ and plot it for the case that $a=b=1$ where $\theta = h(\psi)$.
+
+$$\psi = log\bigg[\frac{\theta}{1-\theta}\bigg]$$
+$$e^{\psi} = \frac{\theta}{1-\theta}$$
+$$ \theta = e^{\psi}(1-\theta)$$
+$$ \theta = e^{\psi}-\theta e^{\psi}$$
+$$ e^{\psi}= \theta +\theta e^{\psi}$$
+$$ e^{\psi}= \theta(1 +e^{\psi})$$
+$$ \theta = \frac{e^{\psi}}{1 +e^{\psi}}$$
+----------------------
+$$\theta=:h(\psi)=\frac{e^\psi}{1+e^\psi}$$
+
+$$\bigg|\frac{dh}{d\psi}\bigg| = \frac{e^{\psi}}{(1+e^\psi)^2} $$
+----------------------------
+
+$$ p_\theta (h(\psi)) = p_\theta (\theta) = \frac{1}{B(a,b)}[h(\psi)]^{a-1}[1-h(\psi)]^{b-1}$$
+-----------------------------------------------------------------
+
+$$ p_\psi (\psi) = p_\theta(h(\psi)) \bigg|\frac{dh}{d\psi}\bigg| = \frac{1}{B(a,b)}[h(\psi)]^{a-1}[1-h(\psi)]^{b-1}\frac{e^{\psi}}{(1 +e^{\psi})^2}$$
+$$= \frac{1}{B(a,b)}\bigg[\frac{e^\psi}{1+e^\psi}\bigg]^{a-1}\bigg[\frac{1}{1+e^\psi}\bigg]^{b-1}\frac{e^{\psi}}{(1 +e^{\psi})^2} $$
+
+$$= \frac{1}{B(a,b)}\bigg[\frac{e^\psi}{1+e^\psi}\bigg]^{a}\bigg[\frac{1}{1+e^\psi}\bigg]^{b}\frac{e^{\psi}}{(1 +e^{\psi})^2}\bigg(\frac{e^\psi}{1+e^\psi}\bigg)\bigg(\frac{1}{1+e^\psi}\bigg) $$
+
+$$ p_{\psi} (\psi) = \frac{1}{B(a,b)}\bigg[\frac{e^\psi}{1+e^\psi}\bigg]^{a}\bigg[\frac{1}{1+e^\psi}\bigg]^{b}$$
+
+```{r}
+theta.sim <- seq(from = -2, to = 2, length.out = 1000)
+a <- 1
+b <- 1
+
+y <- (gamma(a+b)/gamma(a)*gamma(b))*(((exp(log((theta.sim)/(1-theta.sim))))/(1+exp(log((theta.sim)/(1-theta.sim)))))^a)*(((1)/(1+exp(log((theta.sim)/(1-theta.sim)))))^b)
+
+y[is.nan(y)] <- 0
+
+plot(theta.sim, y, type = "l", main = "Probability Distribution", 
+     xlab = "psi", yaxt = "n", ylab = "likelihood") 
+```
+
+Let 
+
+(25 points total) Please refer to lab 4 and complete tasks 4---5. 
+
+
