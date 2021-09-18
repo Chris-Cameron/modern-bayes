@@ -391,3 +391,31 @@ Please replicate a plot similar to Figure \ref{figure:pygmalion-prior} and repor
   \label{figure:pygmalion-prior}
 \end{figure}
 
+
+```{r}
+# sampling from two posteriors 
+
+# Number of posterior simulations
+sim = 1000
+
+# Following formula from the NormalGamma with 
+# the update parameters accounted accounted for below 
+
+lambda_prior = rgamma(1000, shape = prior$a, rate = prior$b)
+
+mu_prior = sapply(sqrt(1/(prior$c*lambda_prior)),rnorm, n = 1, mean = prior$m)
+
+# Store simulations
+simDF = data.frame(lambda = lambda_prior,
+                   mu = mu_prior)
+
+simDF$lambda = simDF$lambda^{-0.5}
+
+# Plot the simulations
+ggplot(data = simDF, aes(x = mu, y = lambda)) +
+  geom_point(alpha = 0.2) + 
+  labs(x = expression(paste(mu, " (Mean Change in IQ Score)")),
+       y = expression(paste(lambda^{-1/2}, " (Std. Dev. of Change)")))  + 
+  ggtitle("Posterior Samples")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+```

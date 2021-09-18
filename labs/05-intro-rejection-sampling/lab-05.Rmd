@@ -64,7 +64,7 @@ sim_fun <- function(f, envelope = "unif", par1 = 0, par2 = 1, n = 10^2, plot = T
   d_envelope <- match.fun(paste0("d", envelope))
   proposal <- r_envelope(n, par1, par2)
   density_ratio <- f(proposal) / d_envelope(proposal, par1, par2)
-  samples <- proposal[runif(n) < density_ratio]
+  samples <- proposal[runif(n) < density_ratio]  #for each x_i in the proposal, compare f(x_i)/g(x_i) with draw from uniform, intuition being that if the density ratio at that potential point x_i > random draw from a unif[0,1] dist, then accept samples keeps all proposals that were accepted
   acceptance_ratio <- length(samples) / n
   if (plot) {
     hist(samples, probability = TRUE, 
@@ -83,10 +83,12 @@ sim_fun <- function(f, envelope = "unif", par1 = 0, par2 = 1, n = 10^2, plot = T
 par(mfrow = c(2,2), mar = rep(4, 4))
 unif_1 <- sim_fun(fx, envelope = "unif", par1 = 0, par2 = 1, n = 10^2) 
 unif_2 <- sim_fun(fx, envelope = "unif", par1 = 0, par2 = 1, n = 10^5)
+unif_3 <- sim_fun(fx, envelope = "beta", par1 = 2, par2 = 2, n = 10^2)
+unif_3 <- sim_fun(fx, envelope = "beta", par1 = 2, par2 = 2, n = 10^5)
 # ATTN: You will need to add in the Beta(2,2) densities on your own to finish task 4.
 ```
 
-Figure 2: Comparision of the output of the rejection sampling for 100 versus 100,000 simulations with uniform and beta distributions as envelope functions.
+Figure 2: Comparison of the output of the rejection sampling for 100 versus 100,000 simulations with uniform and beta distributions as envelope functions.
 
 ```{r}
 par(mfrow = c(1,1))
@@ -96,3 +98,6 @@ par(mfrow = c(1,1))
 
 Be sure to finish any remaining tasks for homework. 
 
+# Task 5
+
+# DELETE ME: Normal because it is more similar in shape (contains inflection points). "You don't have to show, only name"

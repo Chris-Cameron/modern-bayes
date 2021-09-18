@@ -45,11 +45,50 @@ $$= \frac{1}{B(a,b)}\bigg[\frac{e^\psi}{1+e^\psi}\bigg]^{a}\bigg[\frac{1}{1+e^\p
 $$ p_{\psi} (\psi) = \frac{1}{B(a,b)}\bigg[\frac{e^\psi}{1+e^\psi}\bigg]^{a}\bigg[\frac{1}{1+e^\psi}\bigg]^{b}$$
 
 ```{r}
-theta.sim <- seq(from = -2, to = 2, length.out = 1000)
+set.seed(1)
+theta.sim <- seq(from = -0.5, to = 1.5, length.out = 1000)
 a <- 1
 b <- 1
 
 y <- (gamma(a+b)/gamma(a)*gamma(b))*(((exp(log((theta.sim)/(1-theta.sim))))/(1+exp(log((theta.sim)/(1-theta.sim)))))^a)*(((1)/(1+exp(log((theta.sim)/(1-theta.sim)))))^b)
+
+#y[is.nan(y)] <- 0
+
+plot(theta.sim, y, type = "l", main = "Probability Distribution", 
+     xlab = "psi", yaxt = "n", ylab = "likelihood") 
+```
+
+b) Let $\theta \sim gamma(a,b)$ and let $\psi = log(\theta)$. Obtain the form of $p_\psi$ and plot it for the case that $a=b=1$.
+
+$$p_\psi (\psi) = p_\theta(h(\psi))\bigg|\frac{dh}{d\psi}\bigg| $$
+
+-----------------------------------
+
+$$log(\theta) = \psi $$
+$$\theta = e^\psi $$
+-----------------------------------
+
+$$\theta=:h(\psi)=e^\psi$$
+
+$$\bigg|\frac{dh}{d\psi}\bigg| = e^\psi $$
+-----------------------------------
+
+$$p_\theta (h(\psi)) = p_\theta (\theta) = \frac{b^a}{\Gamma(a)}\theta^{a-1}e^{-b\theta}$$
+$$p_\theta (h(\psi)) = p_\theta (\theta) = \frac{b^a}{\Gamma(a)}(e^\psi)^{a-1}e^{-b(e^\psi)}$$
+$$p_\theta (h(\psi)) = p_\theta (\theta) = \frac{b^a}{\Gamma(a)}e^{\psi a-\psi}e^{-be^\psi}$$
+$$p_\theta (h(\psi)) = p_\theta (\theta) = \frac{b^a}{\Gamma(a)}e^{\psi a-\psi-be^\psi}$$
+
+-----------------------------------
+
+$$p_\psi (\psi) = p_\theta(h(\psi)) \bigg|\frac{dh}{d\psi}\bigg| = \frac{b^a}{\Gamma(a)}e^{\psi a-\psi-be^\psi}e^\psi $$
+$$p_\psi (\psi) = \frac{b^a}{\Gamma(a)}e^{\psi a-be^\psi}$$
+
+```{r}
+theta.sim <- seq(from = -10, to = 5, length.out = 1000)
+a <- 1
+b <- 1
+
+y <- ((b^a)/(gamma(a)))*(exp((theta.sim*a)-(b*exp(theta.sim))))
 
 y[is.nan(y)] <- 0
 
@@ -57,8 +96,84 @@ plot(theta.sim, y, type = "l", main = "Probability Distribution",
      xlab = "psi", yaxt = "n", ylab = "likelihood") 
 ```
 
-Let 
-
 (25 points total) Please refer to lab 4 and complete tasks 4---5. 
 
+```{r}
+prior = data.frame(m = 0, c = 1, a = 0.5, b = 50)
+```
+
+
+# Task 4
+
+```{r}
+# Number of posterior simulations
+sim = 100000
+
+# initialize vectors to store samples
+mus = NULL
+lambdas = NULL
+muc = NULL
+lambdac = NULL
+
+# Following formula from the NormalGamma with 
+# the update paramaters accounted accounted for below 
+
+lambdas = rgamma(sim, shape = postS$a, rate = postS$b)
+lambdac = rgamma(sim, shape = postC$a, rate = postC$b)
+
+
+mus = sapply(sqrt(1/(postS$c*lambdas)),rnorm, n = 1, mean = postS$m)
+muc = sapply(sqrt(1/(postC$c*lambdac)),rnorm, n = 1, mean = postC$m)
+
+# Store simulations
+simDF = data.frame(lambda = c(lambdas, lambdac),
+                   mu = c(mus, muc),
+                   Treatment = rep(c("Spurters", "Controls"),
+                                   each = sim))
+
+simDF$lambda = simDF$lambda^{-0.5}
+
+
+
+sgtc = 0 #Stands for "spurters greater than control"
+
+#Calculate proportion of spurters with greater change in IQ than the control group
+for(i in 1:100000){
+  if(simDF[i, "mu"] > simDF[i+100000, "mu"]){
+    sgtc <- sgtc+1
+  }
+}
+
+print(sgtc/100000)
+```
+
+There is a predicted 97.111% chance that a arndomly selected spurter will experience
+a greater increase in their IQ score over a year than a randomly selected child
+from the control group.
+
+# Task 5
+
+```{r}
+
+# Following formula from the NormalGamma with 
+# the prior parameters accounted accounted for below 
+
+lambda_prior = rgamma(1000, shape = prior$a, rate = prior$b)
+
+mu_prior = sapply(sqrt(1/(prior$c*lambda_prior)),rnorm, n = 1, mean = prior$m)
+
+# Store simulations
+simDF = data.frame(lambda = lambda_prior,
+                   mu = mu_prior)
+
+simDF$lambda = simDF$lambda^{-0.5}
+
+# Plot the simulations
+ggplot(data = simDF, aes(x = mu, y = lambda)) +
+  geom_point(alpha = 0.2) + 
+  labs(x = expression(paste(mu, " (Mean Change in IQ Score)")),
+       y = expression(paste(lambda^{-1/2}, " (Std. Dev. of Change)")))  + 
+  ggtitle("Posterior Samples")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
