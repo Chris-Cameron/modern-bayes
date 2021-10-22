@@ -1,0 +1,148 @@
+---
+title: "Homework 5"
+author: "Chris Cameron"
+date: "9/23/2021"
+header-includes:
+   - \usepackage{hyperref, color}
+   - \input{custom2}
+output: pdf_document
+indent: true
+documentclass: article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. (15 points, 5 points each) Hoff, 3.12 (Jeffrey's prior). 
+
+Jeffrey's prior is as follows: $p_J(\theta) \propto \sqrt{I(\theta)}$ where $I(\theta) = -E\bigg[\delta^2~log~\frac{p(Y|\theta)}{\delta\theta^2}\bigg|~\theta\bigg]$ is the fisher information.
+
+a) Let $Y \sim binomial(n,\theta)$. Obtain Jeffreys' prior distribution $p_J(\theta)$ for this model.
+
+$$p_J(\theta) \propto \sqrt{-E\bigg[\delta^2~log~\frac{p(Y|\theta)}{\delta\theta^2}\bigg|~\theta\bigg]}$$
+
+$$p_J(\theta) \propto \sqrt{-E\bigg[\frac{\delta^2}{\delta\theta^2}~log~p(Y|\theta)\bigg]}$$
+$$ \sqrt{-E\bigg[\frac{\delta^2}{\delta\theta^2}~log\bigg(\binom{n}{y}\theta^y(1-\theta)^{n-y}\bigg)~\bigg]}$$
+$$ \sqrt{-E\bigg[\frac{\delta^2}{\delta\theta^2}~log\bigg(\binom{n}{y}\bigg)+y~log(\theta) + (n-y)~log(1-\theta)\bigg)~\bigg]}$$
+$$ \sqrt{-E\bigg[\frac{\delta}{\delta\theta}\bigg(\frac{y}{\theta} - \frac{n-y}{1-\theta}\bigg)\bigg]}$$
+$$ \sqrt{-E\bigg[\frac{-y}{\theta^2} - \frac{n-y}{(1-\theta)^2}\bigg]}$$
+$$ \sqrt{-E\bigg[\frac{-y}{\theta^2}\bigg] + E\bigg[\frac{n-y}{(1-\theta)^2}\bigg]}$$
+$$ \sqrt{\frac{1}{\theta^2}E[y] + \frac{1}{(1-\theta)^2}E[n-y]}$$
+$$ \sqrt{\frac{n\theta}{\theta^2}+ \frac{n-n\theta}{(1-\theta)^2}}$$
+$$ \sqrt{\frac{n}{\theta}+ \frac{n}{1-\theta}}$$
+$$ \sqrt{\frac{n-n\theta}{\theta-\theta^2}+ \frac{n\theta}{\theta-\theta^2}}$$
+$$p_J(\theta) \propto \sqrt{\frac{n}{\theta-\theta^2}}$$
+
+b) Reparameterize the binomial sampling model
+with $\psi = log\frac{\theta}{1-\theta}$ so that $p(y|\psi) = \binom{n}{y}e^{\psi y}(1+e^\psi)^{-n}$
+
+$$p_J(\psi) \propto \sqrt{-E\bigg[\frac{\delta^2}{\delta\psi^2}~log~p(y|\psi)\bigg|~\psi\bigg]}$$
+$$\sqrt{-E\bigg[\frac{\delta^2}{\delta\psi^2}~log\bigg(\binom{n}{y}e^{\psi y}(1+e^\psi)^{-n}\bigg)\bigg]}$$
+$$\sqrt{-E\bigg[\frac{\delta^2}{\delta\psi^2}~log\binom{n}{y}+log(e^{\psi y})+log((1+e^\psi)^{-n})\bigg]}$$
+$$\sqrt{-E\bigg[\frac{\delta^2}{\delta\psi^2}~log\binom{n}{y}+\psi y-nlog(1+e^\psi)\bigg]}$$
+$$\sqrt{-E\bigg[\frac{\delta}{\delta\psi}~ y-\frac{n}{1+e^\psi}e^\psi\bigg]}$$
+$$\sqrt{-E\bigg[\frac{\delta}{\delta\psi}~ y-\frac{ne^\psi}{1+e^\psi}\bigg]}$$
+$$\sqrt{-E\bigg[-\bigg(\frac{ne^\psi(1+e^\psi)-ne^\psi(e^\psi)}{(1+e^\psi)^2}\bigg)\bigg]}$$
+$$\sqrt{-E\bigg[-\bigg(\frac{ne^\psi+ne^{2\psi}-ne^{2\psi}}{(1+e^\psi)^2}\bigg)\bigg]}$$
+$$\sqrt{-E\bigg[-\bigg(\frac{ne^\psi}{(1+e^\psi)^2}\bigg)\bigg]}$$
+$$\sqrt{-\bigg(-\bigg(\frac{ne^\psi}{(1+e^\psi)^2}\bigg)\bigg)}$$
+
+
+$$\sqrt{\frac{ne^\psi}{(1+e^\psi)^2}}$$
+$$p_J(\psi) \propto \frac{\sqrt{ne^\psi}}{1+e^\psi}$$
+c) Take the prior distribution from a) and apply the change of variables formula to it to obtain the induced prior density on $\psi$
+
+Change of variables: $p_\psi(\psi) = p_\theta((h(\psi))\bigg|\frac{dh}{d\psi}\bigg|$ where $\theta = h(\psi)$
+
+$$\psi = log\bigg(\frac{\theta}{1-\theta}\bigg)$$
+$$\frac{\theta}{1-\theta} = e^\psi$$
+$$\theta = e^\psi-\theta e^\psi$$
+$$\theta + \theta e^\psi= e^\psi$$
+$$\theta(1 + e^\psi)= e^\psi$$
+$$\theta= \frac{e^\psi}{1 + e^\psi}$$
+$$h(\psi)= \frac{e^\psi}{1 + e^\psi}$$
+--------------------------------------
+
+$$p_J(\psi) = p_J((h(\psi))\bigg|\frac{dh}{d\psi}\bigg| $$
+$$p_J(\psi) = \sqrt{\frac{n}{h(\psi)-h(\psi)^2}}~\bigg|\frac{d}{d\psi}~\bigg(\frac{e^\psi}{1 + e^\psi}\bigg)\bigg|$$
+$$\sqrt{\frac{n}{h(\psi)(1-h(\psi))}}~~\bigg|\frac{e^\psi(1+e^\psi)-e^{2\psi}}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n}{h(\psi)(1-h(\psi))}}~~\bigg|\frac{e^\psi+e^{2\psi}-e^{2\psi}}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n}{\bigg(\frac{e^\psi}{1 + e^\psi}\bigg)\bigg(1-\bigg(\frac{e^\psi}{1 + e^\psi}\bigg)\bigg)}}~~\bigg|\frac{e^\psi}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n}{\bigg(\frac{e^\psi}{1 + e^\psi}\bigg)\bigg(\frac{1+e^\psi-e^\psi}{1 + e^\psi}\bigg)}}~~\bigg|\frac{e^\psi}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n}{\bigg(\frac{e^\psi}{1 + e^\psi}\bigg)\bigg(\frac{1}{1 + e^\psi}\bigg)}}~~\bigg|\frac{e^\psi}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n}{\bigg(\frac{e^\psi}{(1 + e^\psi)^2}\bigg)}}~~\bigg|\frac{e^\psi}{(1 + e^\psi)^2}\bigg|$$
+$$\sqrt{\frac{n\bigg(\frac{e^\psi}{(1 + e^\psi)^2)}\bigg)^2}{\bigg(\frac{e^\psi}{(1 + e^\psi)^2}\bigg)}}~~$$
+$$\sqrt{n\bigg(\frac{e^\psi}{(1 + e^\psi)^2}\bigg)}$$
+$$\sqrt{\bigg(\frac{ne^\psi}{(1 + e^\psi)^2}\bigg)}$$
+$$p_J(\psi) = \frac{\sqrt{ne^\psi}}{1+e^\psi}$$
+
+2. Please refer to lab 5 and complete tasks 4-5. 
+
+
+According to the rejection sampling approach sample from f(x) using the Unif(0,1) pdf as an enveloping function. In order to do this, we write a general rejection sampling function that also allows us to plot the historams for any simulation size. Finally, our function also allows us to look at task 4 quite easily. 
+
+```{r}
+set.seed(1)
+x <- seq(0, 1, 10^-2) #from task 1
+fx <- function(x) sin(pi * x)^2 #from task 1
+
+sim_fun <- function(f, envelope = "unif", par1 = 0, par2 = 1, n = 10^2, plot = TRUE){
+  
+  r_envelope <- match.fun(paste0("r", envelope))
+  d_envelope <- match.fun(paste0("d", envelope))
+  proposal <- r_envelope(n, par1, par2)
+  density_ratio <- f(proposal) / d_envelope(proposal, par1, par2)
+  samples <- proposal[runif(n) < density_ratio]  #for each x_i in the proposal,
+  #compare f(x_i)/g(x_i) with draw from uniform, intuition being that if the
+  #density ratio at that potential point x_i > random draw from a unif[0,1] dist,
+  #then accept samples keeps all proposals that were accepted
+  acceptance_ratio <- length(samples) / n
+  if (plot) {
+    hist(samples, probability = TRUE, 
+         main = paste0("Histogram of ", 
+                       n, " samples from ", 
+                       envelope, "(", par1, ",", par2,
+                       ").\n Acceptance ratio: ",
+                       round(acceptance_ratio,2)), 
+                       cex.main = 0.75)
+  }
+  list(x = samples, acceptance_ratio = acceptance_ratio)
+}
+```
+
+```{r}
+par(mfrow = c(2,2), mar = rep(4, 4))
+unif_1 <- sim_fun(fx, envelope = "unif", par1 = 0, par2 = 1, n = 10^2) 
+unif_2 <- sim_fun(fx, envelope = "unif", par1 = 0, par2 = 1, n = 10^5)
+unif_3 <- sim_fun(fx, envelope = "beta", par1 = 2, par2 = 2, n = 10^2)
+unif_3 <- sim_fun(fx, envelope = "beta", par1 = 2, par2 = 2, n = 10^5)
+```
+
+Figure 2: Comparison of the output of the rejection sampling for 100 versus 100,000 simulations with uniform and beta distributions as envelope functions.
+
+```{r}
+par(mfrow = c(1,1))
+```
+
+When using the uniform distribution as an enveloping function, the acceptance
+ratio in a sample of 100 was 0.48, and was 0.50 in a sample of 10,000. The
+distribution of samples appeared to be random in the smaller sample, but
+approximately normally distributed in the larger one. 
+
+When using the beta distribution as an enveloping function, the acceptance
+ratio in a sample of 100 was 0.41, and was 0.50 in a sample of 10,000. The
+distribution of samples appeared to be random in the smaller sample, but just
+as when a uniform enveloping function was used, approximately normally
+distributed in the larger one. Since the acceptance ratio for a larger amount
+of samples is more accurate, a beta enveloping function appears to be work about
+equally as well as a uniform enveloping function.
+
+# Task 5
+
+The unif(0,1) and beta(2,2) distributions have acceptance ratios that are
+roughly equal (at about 0.5) one there are many samples, and as such I
+wouldn't recommend either one over the other. If I were to try to find
+a better enveloping function, I would use a normal distribution because 
+$sin(\pi x^2)$ is shaped similarly to a bell curve in that it contains
+inflection points.

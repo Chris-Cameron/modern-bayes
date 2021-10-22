@@ -99,5 +99,10 @@ par(mfrow = c(1,1))
 Be sure to finish any remaining tasks for homework. 
 
 # Task 5
-
+    The unif(0,1) and beta(2,2) distributions have acceptance ratios that are
+    roughly equal (at about 0.5) one there are many samples, and as such I
+    wouldn't recommend either one over the other. If I were to try to find
+    a better enveloping function, I would use a normal distribution because 
+    $sin(\pi x^2)$ is shaped similarly to a bell curve in that it contains
+    inflection points.
 # DELETE ME: Normal because it is more similar in shape (contains inflection points). "You don't have to show, only name"

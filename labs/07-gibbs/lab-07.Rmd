@@ -110,11 +110,28 @@ res <- sampleGibbs(.25,.25,n.sims,data)
 head(res)
 dim(res)
 res[1,1]
+
 ```
 
 # Task 4 (Finish for homework)
+```{r}
+#Convegence Diagnostics
+par(mfrow = c(1,2))
+plot(log(x), type = "l", main = "traceplot") #add here
 
-# Task 5 (Finish for homework)
+#Effective Sample Size
+libary(coda)
+effectiveSize(x)
+
+#Autocrrelation plots
+acf(x, lag.max = 10, plot = TRUE)
+
+#Lag 1 plots
+plot(x[1:(S-1)], x[2:S], main
+```
+
+
+# ask 5 (Finish for homework)
 
 
 
