@@ -119,19 +119,24 @@ res[1,1]
 par(mfrow = c(1,2))
 plot(log(x), type = "l", main = "traceplot") #add here
 
+head(x)
+head(cumsum(x))
+
 #Effective Sample Size
 libary(coda)
 effectiveSize(x)
 
-#Autocrrelation plots
+#Autocorrelation plots
 acf(x, lag.max = 10, plot = TRUE)
 
 #Lag 1 plots
-plot(x[1:(S-1)], x[2:S], main
+plot(x[1:(S-1)], x[2:S], main)
+     
+# 
 ```
 
 
-# ask 5 (Finish for homework)
+# Task 5 (Finish for homework)
 
 
 

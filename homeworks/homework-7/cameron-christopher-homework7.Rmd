@@ -1,0 +1,79 @@
+---
+title: "Homework 7"
+author: "Chris Cameron"
+date: "11/10/2021"
+header-includes:
+   - \usepackage{hyperref, color}
+   - \input{custom2}
+output: pdf_document
+indent: true
+documentclass: article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+bluecrab <- read.csv("data/bluecrab.dat", sep = ' ', header = FALSE)
+orangecrab <- read.csv("data/orangecrab.dat", sep = ' ', header = FALSE)
+```
+
+
+```{r}
+#Set Prior Parameters
+mu_blue <- apply(bluecrab,2,mean)
+mu_orange <- apply(orangecrab,2,mean)
+L_blue <- cov(bluecrab)
+L_orange <- cov(orangecrab)
+S_blue = L_blue
+S_orange = L_orange
+nu_blue <- 7
+nu_orange <- 7
+```
+
+```{r}
+library (mvtnorm)
+library(MCMCpack)
+```
+
+```{r}
+#rbind does not seem to be (properly) returnable in a list, which is why I am not using a function
+
+mu <- mu_blue
+L <- L_blue
+S <- S_blue
+nu <- nu_blue
+Y <- bluecrab
+
+n <- dim (Y)[1]
+Sigma <- S #initialize to prior?
+
+THETA <- SIGMA <- NULL
+set.seed(6)
+
+for(s in 1:1000){
+  
+  #update theta
+  Ln <- solve(solve(L) + n*solve(Sigma))
+  mun <- Ln %*% (solve(L) %*% mu + n*solve(Sigma) %*% mu) #mu is equal to mean
+  theta <- rmvnorm(1, mu, L)
+  
+  #update sigma
+  Sn <- S + (t(Y) - c(theta)) %*% t(t(Y)-c(theta))
+  
+  Sigma <- solve(rwish(nu + n, solve(Sn)))
+
+  #Save Results
+  THETA <- rbind(THETA, theta)
+  SIGMA <- rbind(SIGMA, c(Sigma))
+}
+```
+
+```{r}
+
+```
+
+
+
+
