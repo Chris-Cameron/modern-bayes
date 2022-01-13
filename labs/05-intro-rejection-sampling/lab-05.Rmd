@@ -94,10 +94,6 @@ Figure 2: Comparison of the output of the rejection sampling for 100 versus 100,
 par(mfrow = c(1,1))
 ```
 
-# Remaining tasks
-
-Be sure to finish any remaining tasks for homework. 
-
 # Task 5
     The unif(0,1) and beta(2,2) distributions have acceptance ratios that are
     roughly equal (at about 0.5) one there are many samples, and as such I

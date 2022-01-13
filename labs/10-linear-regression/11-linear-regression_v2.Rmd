@@ -78,6 +78,9 @@ Gibbs sampler (Task 3)
 ===
 Code a Gibbs sampler to fit each of the models. For each swimmer $i,$ obtain draws from the posterior predictive distribution for $y_i^{*},$ the time of swimmer $i$ if they were to swim two weeks from the last recorded time.
 
+```{r}
+
+```
 
  
 

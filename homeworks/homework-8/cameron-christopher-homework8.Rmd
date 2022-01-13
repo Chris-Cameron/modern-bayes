@@ -1,0 +1,214 @@
+---
+title: "Homework 8"
+author: "Chris Cameron"
+date: "11/17/2021"
+header-includes:
+   - \usepackage{hyperref, color}
+   - \input{custom2}
+output: pdf_document
+indent: true
+documentclass: article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import data & monte-carlo library
+```{r}
+swim = read.table('data/swim.dat')
+library(MCMCpack)
+library(pracma) #For matrix inversion
+```
+
+# 1c)
+
+Set the seed, priors, design matrix and number of samples for Gibbs sampler:
+```{r}
+set.seed(89780)
+
+a = 0.1
+b = 0.1
+
+beta0 = c(23, 0)
+sigma0 = rbind(c(5,0), c(0,2))
+
+#Design Matrix
+X = cbind(rep(1, 6), seq(1, 11, by = 2))
+
+#Number of samples
+num_samples = 5000
+
+```
+
+Run the Gibbs sampler
+```{r}
+swim_pred = apply(swim, MARGIN = 1, function(y) { #Row Wise
+  
+  BETA = matrix(nrow = num_samples, ncol = length(beta0))
+  TAU = numeric(num_samples)
+  
+  # Initial values
+  beta = beta0
+  tau = 0.2 
+  
+  for (s in 1:num_samples) {
+
+    Sigma.n <- inv(inv(sigma0) + tau * (t(X) %*% X))
+    Beta.n <- Sigma.n %*% (inv(sigma0) %*% beta0 + tau * (t(X) %*% y))
+    
+    beta = mvrnorm(1, Beta.n, Sigma.n)
+    
+    SSR = (t(y) %*% y) - (2 * t(beta) %*% t(X) %*% y) + (t(beta) %*% t(X) %*% X %*% beta)
+    
+    tau = rgamma(1, a + 3, (b + SSR) / 2)
+    
+    BETA[s,] = beta
+    TAU[s] = tau
+  }
+  
+  return(list(BETA, TAU))
+})
+```
+
+
+# 1d)
+
+```{r}
+BETA = purrr::map(swim_pred, 1) #Extract beta values for all swimmers
+TAU = purrr::map(swim_pred, 2) #Above, but for Tau
+
+pred_x = c(1, 13)
+
+pred_time = matrix(nrow = num_samples,ncol = nrow(swim))
+
+for (i in 1:nrow(swim)) {
+  pred_y = rnorm(num_samples, BETA[[i]] %*% pred_x, 1/sqrt(TAU[[i]]))
+  pred_time[,i] = pred_y
+}
+```
+
+```{r}
+slowest = apply(pred_time, MARGIN = 1, which.max)
+table(slowest) / length(slowest)
+```
+
+   When computing the probability that any one of the four swimmers has the highest
+time, swimmer 1 has the lowest predicted probability of having the highest time, at less than
+1%. As such, based on these probabilities the coach should select swimmer 1. To
+see whether swimmer 1 is expected to be better overall or is simply more consistent
+than their fellow swimmers, we can also check the probability of having the lowest time.
+
+```{r}
+fastest = apply(pred_time, MARGIN = 1, which.min)
+table(fastest) / length(fastest)
+```
+
+Checking the probability that a given swimmer only further confirms that the coach
+should pick swimmer 1, as they have a predicted probability of over .75 of having
+the lowest time.
+
+
+## Multivariate Methods
+
+Given:
+
+$$ {y}_i \mid \theta,\Sigma \stackrel{i.i.d.}{\sim} MVN(\theta_{d \times 1},\Sigma_{d \times d}), \quad i = 1, \cdots, n, $$
+
+and the independent priors
+
+$$\theta_{d \times 1} \sim MVN(\mu_{d \times 1},{T}_{d \times d}), 
+\qquad \Sigma_{d \times d} \sim \text{inverseWishart}(\nu, \Psi^{-1}_{d \times d}).$$
+
+
+a) Show that $(\theta^T {T}^{-1} \mu)^T = \mu^T {T}^{-1} \theta.$
+
+$$(\theta^T{T}^{-1}\mu)^T = \mu^T(T^{-1})^T\theta$$ 
+$$\mu^T(T^{-1})^T\theta = \mu^T(T^T)^{-1}\theta$$
+Since T is a covariance matrix, $T = T^T$
+
+$$\mu^T(T^T)^{-1}\theta = \mu^T(T)^{-1}\theta $$
+
+b) Use (a) to show that $p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta-2\theta^TT^{-1}\mu)}$
+
+$$p(\theta) \propto det(T)^{-\frac{n}{2}}e^{-\frac{1}{2}\sum_i(\theta_i-\mu)^TT^{-1}(\theta_i-\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}\sum_i(\theta_i-\mu)^TT^{-1}(\theta_i-\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta-\mu)^TT^{-1}(\theta-\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^T-\mu^T)T^{-1}(\theta-\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}((\theta^T-\mu^T)( T^{-1}\theta- T^{-1}\mu))} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta-\theta^TT^{-1}\mu-\mu^TT^{-1}\theta+\mu^TT^{-1}\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta)} e^{-\frac{1}{2}(-\theta^TT^{-1}\mu)} e^{-\frac{1}{2}(\mu^TT^{-1}\theta)} e^{-\frac{1}{2}(\mu^TT^{-1}\mu)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta)} e^{-\frac{1}{2}(-\theta^TT^{-1}\mu)} e^{-\frac{1}{2}(\mu^TT^{-1}\theta)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta-\theta^TT^{-1}\mu-\mu^TT^{-1}\theta)} $$
+$$p(\theta) \propto e^{-\frac{1}{2}(\theta^TT^{-1}\theta-2\theta^TT^{-1}\mu)}~~(part~ a) $$
+
+c) Use (b) to show that:
+
+$$ p(\theta \mid \Sigma, {y} )
+\sim MVN\left\{\mu^*(\Sigma) := {{T}^*}(n \boldsymbol{\Sigma}^{-1}\bar{{y}} + {T}^{-1}\mu), {T}^* := ( n\boldsymbol{\Sigma}^{-1} + {T}^{-1})^{-1}\right\}. $$
+
+$$p(y|\theta,\Sigma) = \prod_{i=1}^n p(y_i | \theta, \Sigma) \sim \prod_{i=1}^nMVN(\theta,\Sigma) $$
+
+$$p(y|\theta,\Sigma) =  \prod_{i=1}^n (2\pi)^{\frac{-p}{2}}det(\Sigma)^\frac{-1}{2}
+e^{-\frac{1}{2}(y_i-\theta)^T\Sigma^{-1}(y_i-\theta)}$$
+
+$$\propto e^{-\frac{1}{2}\sum_i\big((y_i-\theta)^T\Sigma^{-1}(y_i-\theta)\big)} $$
+
+$$\propto e^{-\frac{1}{2}\big(\sum_iy_i^T\Sigma^{-1}y_i-
+2\sum_i\theta_i^T\Sigma^{-1}y_i + \Sigma_i\theta^T\Sigma^{-1}\theta\big)} $$
+
+$$\propto e^{-\frac{1}{2}(-2\theta^T\Sigma^{-1}n\overline{y}+n\theta^T\Sigma^{-1}\theta)} $$
+
+$$p(\theta|\Sigma,y) \propto p(y | \theta, \Sigma)p(\theta)$$
+
+$$\propto e^{-\frac{1}{2}(-2\theta^T\Sigma^{-1}n\overline{y}+n\theta^T\Sigma^{-1}\theta)}
+ e^{-\frac{1}{2}(\theta^TT^{-1}\theta-2\theta^TT^{-1}\mu)}$$
+ 
+$$ \propto e^{-\frac{1}{2}(-2\theta^T\Sigma^{-1}n\overline{y}+n\theta^T\Sigma^{-1}\theta
++ \theta^TT^{-1}\theta-2\theta^TT^{-1}\mu)}$$
+
+$$\propto e^{\theta^T(\Sigma^{-1}n\overline{y}+T^{-1}\mu)-
+\frac{1}{2}\theta^T(n\Sigma^{-1}T^{-1})\theta}$$
+
+$$\propto e^{\theta^T(n\Sigma^{-1}\overline{y}+T^{-1}\mu)-
+\frac{1}{2}\theta^T(n\Sigma^{-1}T^{-1})\theta}$$
+
+$$p(\theta|\Sigma,y) \sim MVN(n\Sigma^{-1}T^{-1})^{-1}(n\Sigma^{-1}\overline{y}+T^{-1}\mu),(n\Sigma^{-1}T^{-1})^{-1}) $$
+
+d) Show that:
+
+$$\text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+\sum_{i=1}^n ({y}_i-\boldsymbol{\theta})^T \boldsymbol{\Sigma}^{-1}({y}_i-\boldsymbol{\theta}) = \text{tr}\left\{\left(\Psi + \sum_{i=1}^n ({y}_i-\boldsymbol{\theta}) ({y}_i-\boldsymbol{\theta})^T \right) \boldsymbol{\Sigma}^{-1}\right\}. $$
+
+$$\text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+\sum_{i=1}^n ({y}_i-\boldsymbol{\theta})^T \boldsymbol{\Sigma}^{-1}({y}_i-\boldsymbol{\theta}) = \text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+\sum_{i=1}^n \text{tr}(({y}_i-\boldsymbol{\theta})^T \boldsymbol{\Sigma}^{-1}({y}_i-\boldsymbol{\theta})) $$
+$$\text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+\sum_{i=1}^n \text{tr}(({y}_i-\boldsymbol{\theta})^T \boldsymbol({y}_i-\boldsymbol{\theta})\Sigma^{-1})~~~~  \text{Lemma 2}$$
+$$\text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+\sum_{i=1}^n \text{tr}(({y}_i-\boldsymbol{\theta})^T \boldsymbol({y}_i-\boldsymbol{\theta})\Sigma^{-1})$$
+$$\text{tr}(\Psi\boldsymbol{\Sigma}^{-1})+ \text{tr}\bigg( \sum_{i=1}^n ({y}_i-\boldsymbol{\theta})^T \boldsymbol({y}_i-\boldsymbol{\theta})\Sigma^{-1}\bigg)$$
+$$\text{tr}\bigg(\Psi\boldsymbol{\Sigma}^{-1}+  \sum_{i=1}^n ({y}_i-\boldsymbol{\theta})^T \boldsymbol({y}_i-\boldsymbol{\theta})\Sigma^{-1}\bigg)$$
+$$\text{tr}\bigg(\bigg(\Psi\boldsymbol+  \sum_{i=1}^n ({y}_i-\boldsymbol{\theta})^T \boldsymbol({y}_i-\boldsymbol{\theta})\bigg)\Sigma^{-1}\bigg)$$
+
+e) Use d to show that $[\Sigma|\theta,\text{data}] \sim IW(\nu^*, \Psi^*(\theta))$ where:
+$$\nu^* = n + v~\text{and}~\Psi^*(\theta) = (\Psi + \sum_{i=1}^n ({y}_i-\boldsymbol{\theta}) ({y}_i-\boldsymbol{\theta})^T)^{-1} .$$
+$$----------------------$$
+
+$$ [\Sigma|\theta, data] \sim p(\Sigma | \theta, y)$$
+
+$$p(y | \theta, \Sigma) \propto det(\Sigma)^{-\frac{n}{2}} e^{-\Sigma_i(y_i-\theta)^T\Sigma^{-1}(y_i-\theta)/2}$$
+
+$$ \propto det(\Sigma)^{-\frac{n}{2}} e^{-\Sigma_i(y_i-\theta)^T(y_i-\theta)\Sigma^{-1}/2}$$
+$$ \propto det(\Sigma)^{-\frac{n}{2}} e^{-tr(\Sigma_i(y_i-\theta)^T(y_i-\theta)\Sigma^{-1}/2)}$$
+$$p(\Sigma | \theta, y) = p(\Sigma)p(y| \theta, \Sigma)$$
+$$\propto det(\Sigma)^{-(v+p+1)/2}e^{-tr(\psi^{-1}\Sigma^{-1})/2} * 
+det(\Sigma)^{-\frac{n}{2}} e^{-tr(\Sigma_i(y_i-\theta)^T(y_i-\theta)\Sigma^{-1})/2}$$
+
+
+$$\propto det(\Sigma)^{-(v+p+1+n)/2}
+e^{-tr(\psi^{-1}\Sigma^{-1})/2-tr(\Sigma_i(y_i-\theta)^T(y_i-\theta)\Sigma^{-1})/2}$$
+
+
+$$\propto det(\Sigma)^{-(v+p+1+n)/2}e^{-tr((\psi+\Sigma_i(y_i-\theta)(y_i-\theta)^T)\Sigma^{-1})/2} ~~ \text{(part d)}$$
+
+$$p(\Sigma | \theta, y) \sim  IW(n+v, (\psi+\Sigma_{i=1}^n(y_i-\theta)(y_i-\theta)^T)^{-1}$$
+
+$$[\Sigma|\theta, data] \sim  IW(n+v, (\psi+\Sigma_{i=1}^n(y_i-\theta)(y_i-\theta)^T)^{-1}$$
+
+

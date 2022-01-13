@@ -14,6 +14,8 @@ documentclass: article
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# A)
+
 ```{r}
 bluecrab <- read.csv("data/bluecrab.dat", sep = ' ', header = FALSE)
 orangecrab <- read.csv("data/orangecrab.dat", sep = ' ', header = FALSE)
@@ -30,6 +32,7 @@ S_blue = L_blue
 S_orange = L_orange
 nu_blue <- 7
 nu_orange <- 7
+iterations <- 10000
 ```
 
 ```{r}
@@ -38,7 +41,8 @@ library(MCMCpack)
 ```
 
 ```{r}
-#rbind does not seem to be (properly) returnable in a list, which is why I am not using a function
+#rbind does not seem to be (properly) returnable in a list,
+#which is why I am not using a function
 
 mu <- mu_blue
 L <- L_blue
@@ -49,10 +53,10 @@ Y <- bluecrab
 n <- dim (Y)[1]
 Sigma <- S #initialize to prior?
 
-THETA <- SIGMA <- NULL
+THETA_blue <- SIGMA_blue <- NULL
 set.seed(6)
 
-for(s in 1:1000){
+for(s in 1:iterations){
   
   #update theta
   Ln <- solve(solve(L) + n*solve(Sigma))
@@ -65,15 +69,119 @@ for(s in 1:1000){
   Sigma <- solve(rwish(nu + n, solve(Sn)))
 
   #Save Results
-  THETA <- rbind(THETA, theta)
-  SIGMA <- rbind(SIGMA, c(Sigma))
+  THETA_blue <- rbind(THETA_blue, theta)
+  SIGMA_blue <- rbind(SIGMA_blue, c(Sigma))
 }
 ```
 
 ```{r}
+mu <- mu_orange
+L <- L_orange
+S <- S_orange
+nu <- nu_orange
+Y <- orangecrab
+
+n <- dim (Y)[1]
+Sigma <- S #initialize to prior?
+
+THETA_orange <- SIGMA_orange <- NULL
+
+for(s in 1:iterations){
+  
+  #update theta
+  Ln <- solve(solve(L) + n*solve(Sigma))
+  mun <- Ln %*% (solve(L) %*% mu + n*solve(Sigma) %*% mu) #mu is equal to mean
+  theta <- rmvnorm(1, mu, L)
+  
+  #update sigma
+  Sn <- S + (t(Y) - c(theta)) %*% t(t(Y)-c(theta))
+  
+  Sigma <- solve(rwish(nu + n, solve(Sn)))
+
+  #Save Results
+  THETA_orange <- rbind(THETA_orange, theta)
+  SIGMA_orange <- rbind(SIGMA_orange, c(Sigma))
+}
+```
+
+# B)
+```{r}
+plot(THETA_blue, col = rgb(red = 0, green = 0.5, blue = 1, alpha = 0.1),
+     main = "Dimensions of Crabs", xlab = "Body Depth", ylab = "Rear Width",
+     xlim = c(0, 22), ylim = c(0, 29))
+points(THETA_orange, col = rgb(red = 1, green = 0.5, blue = 0, alpha = 0.1))
+legend("topleft", c("Blue Crab", "Orange Crab"), fill = c("deepskyblue", "orange"))
+#Citation: https://stackoverflow.com/questions/14683766/
+#adding-key-legend-to-multi-histogram-plot-in-r
+```
+
+```{r, echo = FALSE}
+print("Average Blue Crab Body Depth")
+mean(THETA_blue[1])
+print("Average Blue Crab Rear Width")
+mean(THETA_blue[2])
+print("Average Orange Crab Body Depth")
+mean(THETA_orange[1])
+print("Average Orange Crab Rear Width")
+mean(THETA_orange[2])
 
 ```
 
+The above plot demonstrates that both orange and blue crabs demonstrate a positive
+linear relationship between their rear widths and body depths. The relationship
+between width and depth appears to have a similar slope for both species, 
+with an orange crab having a larger rear width than a blue crab of equal body depth.
+Furthermore, orange crabs have rear widths that are 2.1 cm larger than that of
+blue crabs, and body depths that are 0.2 cm larger, demonstrating that orange
+crabs are larger on average.
+
+# C)
+
+```{r}
+blue_cor <- list()
+for (x in 1:iterations){
+  blue_cor[x] <- cov2cor(matrix(SIGMA_blue[x,1:4], nrow=2, ncol=2))[2]
+}
+
+orange_cor <- list()
+for (x in 1:iterations){
+  orange_cor[x] <- cov2cor(matrix(SIGMA_orange[x,1:4], nrow=2, ncol=2))[2]
+}
+```
+
+```{r}
+plot(density(unlist(blue_cor)),
+     main = "Density of Correlation Between Width & Depth For Blue Crabs")
+abline(v = mean(unlist(blue_cor)))
+
+plot(density(unlist(orange_cor)),
+     main = "Density of Correlation Between Width & Depth For Orange Crabs")
+abline(v = mean(unlist(orange_cor)))
 
 
+```
 
+```{r}
+a = 0
+for(i in 1:iterations){
+  if(unlist(orange_cor)[i] > unlist(blue_cor)[i]){
+    a <- a+1
+  }
+}
+print(a/iterations)
+
+```
+
+```{r}
+t.test(unlist(orange_cor), unlist(blue_cor), alternative = "less")
+```
+
+Both types of crabs have correlations between their body depths and rear widths
+that are very high, with the density of this correlation being skewed left for
+both. The average correlation for orange crabs is .985, while that for blue 
+crabs is .964. The average correlation for any one sample of orange crabs has
+a probability of .789 of being higher than that of any one sample of blue crabs.
+The probability that the overall mean correlation of orange crabs is higher than
+that of blue crabs, using a t-test with 13460 degrees of freedom, is nearly 1.
+These values suggest that the correlation between correlation between body depth
+and rear width is on average higher in orange crabs than in blue crabs.
